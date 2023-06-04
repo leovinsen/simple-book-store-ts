@@ -7,9 +7,9 @@
     "build": "npx tsc",
     "start": "node dist/index.js",
     "dev": "nodemon -V --exec ts-node src/index.ts",
-    "migration:create": "db-migrate create",
-    "migration:up": "db-migrate up",
-    "migration:down": "db-migrate down",
+    "migration:create": "db-migrate create -m src/database/migrations",
+    "migration:up": "db-migrate up -m src/database/migrations",
+    "migration:down": "db-migrate down -m src/database/migrations",
     "test": "mocha --require ts-node/register --recursive 'src/**/*.test.ts' --timeout 5000 --exit"
   },
   "keywords": [],
