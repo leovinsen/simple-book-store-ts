@@ -1,11 +1,11 @@
 import 'mocha';
 import chai from 'chai';
-import { BcryptPasswordHasher } from './passwordHasher';
+import PasswordHasher from './passwordHasher';
 
 let assert = chai.assert;
 
 describe('BcryptPasswordHasher hash test', () => {
-    const passwordHasher = new BcryptPasswordHasher();
+    const passwordHasher = new PasswordHasher();
     const password = "pwd12345";
     const password2 = "asdfgjkl";
 
