@@ -37,6 +37,19 @@ class AuthService {
         this._passwordHasher = passwordHasher;
     }
 
+    /**
+     * Finds a User with given email and password and verifies hash of the password
+     * against the found User record's stored hash.
+     * 
+     * Returns a JWT Token containing User information if the password matches stored hash.
+     * 
+     * Throws a UserNotFoundError if a user with given email is not found.
+     * Throws an InvalidCredentialsError if password does not match stored hash.
+     * 
+     * @param email user's email
+     * @param password plaintext password
+     * @returns a JWT token if email and password combination is valid
+     */
     public async login(email: string, password: string): Promise<string> {
         const user: User | null = await this._userRepository.findUserByEmail(email);
         if (user == null) {
@@ -55,6 +68,15 @@ class AuthService {
         });
     }
 
+    /**
+     * Registers a new User with given email and password.
+     * 
+     * Throws a UserAlreadyExistsError if a User with given email already exists.
+     * 
+     * @param email user'email. Must be unique
+     * @param password plaintext password
+     * @returns the created User record if successful
+     */
     public async registerUser(email: string, password: string): Promise<User> {
         const checkUser = await this._userRepository.findUserByEmail(email);
         if (checkUser != null) {
