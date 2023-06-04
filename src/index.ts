@@ -5,8 +5,10 @@ import bodyParser from 'body-parser';
 import { createDB } from './database';
 import { Container } from 'typedi';
 import { Database } from 'sqlite3';
+import router from './route';
+import { errorHandler } from './middleware/errorHandler';
 
-const createApp = async (): Promise<Express> => {
+const createApp = async (database?: Database): Promise<Express> => {
     const app: Express = express();
 
     app.get('/', (req: Request, res: Response) => {
@@ -14,8 +16,10 @@ const createApp = async (): Promise<Express> => {
     });
 
     app.use(bodyParser.json());
+    app.use(router);
+    app.use(errorHandler);
 
-    const db = createDB();
+    const db = database || createDB();
     Container.set(Database, db);
 
     return app;
