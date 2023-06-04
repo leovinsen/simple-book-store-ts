@@ -14,7 +14,7 @@ describe('UserRepository', () => {
     let userRepository: UserRepository;
 
     before(async () => {
-        const database = createTestDB(uuidv4());
+        const database = await createTestDB(uuidv4());
         db = database.db;
         teardown = database.teardown;
 
