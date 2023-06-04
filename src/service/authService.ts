@@ -4,6 +4,7 @@ import PasswordHasher from "../helper/passwordHasher";
 import { NotFoundError } from "../error/notFoundError";
 import { AlreadyExistsError } from "../error/alreadyExistsError";
 import UserRepository from "../repository/userRepository";
+import { generateJwt } from "../helper/generateJwt";
 
 class UserNotFoundError extends NotFoundError {
     constructor() {
@@ -47,8 +48,11 @@ class AuthService {
             throw new InvalidCredentialsError();
         }
 
-        // TODO: implement JWT
-        return "";
+        return generateJwt({
+            id: user!.id,
+            email: user!.email,
+            created_at: user!.createdAt,
+        });
     }
 
     public async registerUser(email: string, password: string): Promise<User> {
