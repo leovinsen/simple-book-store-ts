@@ -1,6 +1,6 @@
 import sinon, { SinonStubbedInstance, StubbableType } from "sinon";
 import UserRepository from "../repository/userRepository";
-import { AuthService, UserAlreadyExistsError } from "./authService";
+import { AuthService, InvalidCredentialsError, UserAlreadyExistsError, UserNotFoundError } from "./authService";
 import PasswordHasher from "../helper/passwordHasher";
 import { faker } from "@faker-js/faker";
 import 'mocha';
@@ -30,6 +30,55 @@ describe('AuthService', () => {
         userRepository = sinon.createStubInstance(UserRepository);
         passwordHasher = sinon.createStubInstance(PasswordHasher);
         authService = new AuthService(userRepository, passwordHasher);
+    })
+
+    describe('login', () => {
+        it('should return a JWT token for a successful login', async () => {
+            userRepository.findUserByEmail.returns(new Promise((resolve, reject) => {
+                resolve(fakeUser);
+            }));
+            passwordHasher.verifyHash.returns(true);
+
+            const jwt = await authService.login(fakeEmail, fakePassword);
+
+            expect(userRepository.findUserByEmail).to.have.been.calledWith(fakeEmail);
+            expect(passwordHasher.verifyHash).to.have.been.calledWith(fakePassword);
+            expect(jwt).not.null;
+        });
+
+        it('should throw a UserNotFoundError if userRepository.findUserByEmail returns null', async () => {
+            userRepository.findUserByEmail.returns(new Promise((resolve, reject) => {
+                resolve(null);
+            }));
+
+            let error: unknown | null = null;
+            try {
+                await authService.login(fakeEmail, fakePassword);
+            } catch (e) {
+                error = e;
+            }
+
+            expect(error).not.null;
+            expect(error).instanceOf(UserNotFoundError);
+        });
+
+        it('should throw a InvalidCredentialsError if passwordHasher.verify returnns false', async () => {
+            userRepository.findUserByEmail.returns(new Promise((resolve, reject) => {
+                resolve(fakeUser);
+            }));
+            passwordHasher.verifyHash.returns(false);
+
+            let error: unknown | null = null;
+            try {
+                await authService.login(fakeEmail, fakePassword);
+            } catch (e) {
+                error = e;
+            }
+
+            expect(userRepository.findUserByEmail).to.have.been.calledWith(fakeEmail);
+            expect(error).not.null;
+            expect(error).instanceOf(InvalidCredentialsError);
+        });
     })
 
     describe('registerUser', () => {
