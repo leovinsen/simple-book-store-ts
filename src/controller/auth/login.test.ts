@@ -12,8 +12,8 @@ import Container from 'typedi';
 
 let assert = chai.assert;
 
-describe('Register', () => {
-    const path = '/auth/register';
+describe('Login', () => {
+    const path = '/auth/login';
 
     let db: Database;
     let teardown: Teardown;
@@ -35,20 +35,31 @@ describe('Register', () => {
     })
 
 
-    it('should create a new user successfully', async () => {
-        const res = await request(app).post(path).send({ email: faker.internet.email(), password: uuidv4() });
-        assert.equal(res.status, 201);
-        assert.equal(res.body.message, 'User created successfully');
-    });
-
-    it('should throw a 400 if user already exists in database', async () => {
+    it('should return a JWT on successful login', async () => {
         const email = faker.internet.email();
         const password = uuidv4();
+
         await authService.registerUser(email, password);
 
         const res = await request(app).post(path).send({ email: email, password: password });
-        assert.equal(res.status, 400);
-        assert.equal(res.body.message, 'User already exists.');
+        assert.equal(res.status, 200);
+        assert.isNotNull(res.body.jwt);
+    });
+
+    it('should throw a 401 if user does not exists in database', async () => {
+        const res = await request(app).post(path).send({ email: faker.internet.email(), password: uuidv4() });
+        assert.equal(res.status, 401);
+        assert.equal(res.body.message, 'Invalid email or password.');
+    });
+
+    it('should throw a 401 if an invalid password is entered', async () => {
+        const email = faker.internet.email();
+        const wrongPassword = "wrongPass";
+        await authService.registerUser(email, uuidv4());
+
+        const res = await request(app).post(path).send({ email: email, password: wrongPassword });
+        assert.equal(res.status, 401);
+        assert.equal(res.body.message, 'Invalid email or password.');
     });
 
     it('should throw a 400 for empty email', async () => {
@@ -67,11 +78,5 @@ describe('Register', () => {
         const res = await request(app).post(path).send({ email: faker.internet.email(), password: "" });
         assert.equal(res.status, 400);
         assert.equal(res.body.message, 'Password is required.');
-    });
-
-    it('should throw a 400 for password not at least 8 chars long', async () => {
-        const res = await request(app).post(path).send({ email: faker.internet.email(), password: "1234567" });
-        assert.equal(res.status, 400);
-        assert.equal(res.body.message, 'Password has to be at least 8 characters long.');
     });
 })
