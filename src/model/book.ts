@@ -39,7 +39,7 @@ export default class Book {
     }
 
     get price(): number {
-        return this._price / 100;
+        return this._price;
     }
 
     get createdAt(): Date {

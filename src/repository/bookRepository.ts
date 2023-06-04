@@ -19,7 +19,15 @@ export default class BookRepository {
                     reject(err)
                 }
 
-                resolve(rows)
+                const newBooks = rows.map((book) => new Book(
+                    book.id,
+                    book.title,
+                    book.synopsis,
+                    book.author,
+                    book.price / 100,
+                    book.createdAt,
+                ));
+                resolve(newBooks);
             });
         });
     }
