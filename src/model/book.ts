@@ -1,10 +1,10 @@
 export default class Book {
-    private _id: number;
-    private _title: string;
-    private _synopsis: string;
-    private _author: string;
-    private _price: number;
-    private _createdAt: Date;
+    readonly id: number;
+    readonly title: string;
+    readonly synopsis: string;
+    readonly author: string;
+    readonly price: number;
+    readonly createdAt: Date;
 
     constructor(
         id: number,
@@ -14,35 +14,11 @@ export default class Book {
         price: number,
         createdAt: Date,
     ) {
-        this._id = id;
-        this._title = title;
-        this._synopsis = synopsis;
-        this._author = author;
-        this._price = price;
-        this._createdAt = createdAt;
-    }
-
-    get id(): number {
-        return this._id;
-    }
-
-    get title(): string {
-        return this._title;
-    }
-
-    get synopsis(): string {
-        return this._synopsis;
-    }
-
-    get author(): string {
-        return this._author;
-    }
-
-    get price(): number {
-        return this._price;
-    }
-
-    get createdAt(): Date {
-        return this._createdAt;
+        this.id = id;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.author = author;
+        this.price = price;
+        this.createdAt = createdAt;
     }
 }
