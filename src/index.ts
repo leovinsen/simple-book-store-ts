@@ -2,6 +2,9 @@ import 'reflect-metadata';
 import express, { Express, Request, Response } from 'express';
 import config from './config';
 import bodyParser from 'body-parser';
+import { createDB } from './database';
+import { Container } from 'typedi';
+import { Database } from 'sqlite3';
 
 const createApp = async (): Promise<Express> => {
     const app: Express = express();
@@ -11,6 +14,9 @@ const createApp = async (): Promise<Express> => {
     });
 
     app.use(bodyParser.json());
+
+    const db = createDB();
+    Container.set(Database, db);
 
     return app;
 }
