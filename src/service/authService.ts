@@ -62,7 +62,7 @@ class AuthService {
         }
 
         return generateJwt({
-            id: user!.id,
+            sub: user!.id,
             email: user!.email,
             created_at: user!.createdAt,
         });

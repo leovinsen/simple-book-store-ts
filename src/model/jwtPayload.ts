@@ -1,5 +1,5 @@
 export type JwtPayload = {
-    id: number;
-    email: string;
-    created_at: Date;
+    sub: number; // subject / userId
+    email: string; // user email
+    created_at: Date; // token creation time
 };
