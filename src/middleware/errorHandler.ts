@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from '../error/validationError';
 import { AlreadyExistsError } from '../error/alreadyExistsError';
 import { NotFoundError } from '../error/notFoundError';
-import { CustomError } from '../error/CustomError';
+import { CustomError } from '../error/customError';
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
     let statusCode: number;

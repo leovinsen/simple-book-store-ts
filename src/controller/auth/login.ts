@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { validateEmail } from '../../validator/validateEmail';
-import { CustomError } from '../../error/CustomError';
+import { CustomError } from '../../error/customError';
 import { validatePassword } from '../../validator/validatePassword';
 import Container from 'typedi';
 import { validateFn } from '../../validator/validator';

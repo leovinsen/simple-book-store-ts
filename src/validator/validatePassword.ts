@@ -1,4 +1,4 @@
-import { CustomError } from "../error/CustomError";
+import { CustomError } from "../error/customError";
 import { FieldIsRequiredError } from "../error/validationError"
 import { Validator } from "./validator";
 
