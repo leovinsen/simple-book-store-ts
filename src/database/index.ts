@@ -25,8 +25,6 @@ export const createTestDB = async (uniqueId: string): Promise<{ db: Database, te
     const dbPath = path.join(__dirname, `${uniqueId}.db`);
     const db = new Database(dbPath);
 
-    db.get("PRAGMA foreign_keys = ON");
-
     const globPattern = path.join(__dirname, '**/*-up.sql');
     const sqlFilePaths: string[] = globSync(globPattern, {
         signal: AbortSignal.timeout(1000),
