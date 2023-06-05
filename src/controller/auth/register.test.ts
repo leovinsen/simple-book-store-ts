@@ -1,11 +1,9 @@
 import 'mocha';
 import chai from 'chai';
 import { agent as request } from 'supertest';
-import { Database } from 'sqlite3';
 import { Express } from 'express';
-import createApp from '../..';
+import { createApp } from '../../app';
 import { AuthService } from '../../service/authService';
-import { Teardown, createTestDB } from '../../database';
 import { v4 as uuidv4 } from 'uuid';
 import { faker } from '@faker-js/faker';
 import Container from 'typedi';
@@ -15,25 +13,13 @@ let assert = chai.assert;
 describe('Register', () => {
     const path = '/auth/register';
 
-    let db: Database;
-    let teardown: Teardown;
-
     let app: Express;
     let authService: AuthService;
 
     before(async () => {
-        const database = await createTestDB(uuidv4());
-        db = database.db;
-        teardown = database.teardown;
-
         app = await createApp();
         authService = Container.get(AuthService);
     });
-
-    after(() => {
-        teardown();
-    })
-
 
     it('should create a new user successfully', async () => {
         const res = await request(app).post(path).send({ email: faker.internet.email(), password: uuidv4() });

@@ -3,10 +3,7 @@ import chai from 'chai';
 import { agent as request } from 'supertest';
 import { Database } from 'sqlite3';
 import { Express } from 'express';
-import createApp from '../..';
-import { BookService } from '../../service/bookService';
-import { Teardown, createTestDB } from '../../database';
-import { v4 as uuidv4 } from 'uuid';
+import { createApp } from '../../app';
 import { faker } from '@faker-js/faker';
 import Container from 'typedi';
 
@@ -16,8 +13,6 @@ describe('Get Books', () => {
     const path = '/books';
 
     let db: Database;
-    let teardown: Teardown;
-
     let app: Express;
 
     const title = "Lorem ipsum";
@@ -26,18 +21,13 @@ describe('Get Books', () => {
     const price = 1000;
 
     before(async () => {
-        const database = await createTestDB(uuidv4());
-        db = database.db;
-        teardown = database.teardown;
-
-        app = await createApp(db);
+        app = await createApp();
+        db = Container.get(Database);
     });
 
-    after(() => {
-        teardown();
-    })
-
     it('should return a list of books', async () => {
+        db.run("DELETE FROM books");
+
         const stmt = db.prepare("INSERT INTO books (`title`, `synopsis`, `author`, `price`) VALUES (?, ?, ?, ?)");
         stmt.run(title, synopsis, author, price);
         stmt.finalize();
