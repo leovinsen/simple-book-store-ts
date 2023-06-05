@@ -5,7 +5,10 @@ import config from '../config';
 import fs from 'fs';
 
 export const createDB = (): Database => {
-    return new Database(config.dbPath);
+    const db = new Database(config.dbPath);
+    db.get("PRAGMA foreign_keys = ON");
+
+    return db;
 }
 
 export type Teardown = () => void;
@@ -21,6 +24,8 @@ export type Teardown = () => void;
 export const createTestDB = async (uniqueId: string): Promise<{ db: Database, teardown: Teardown }> => {
     const dbPath = path.join(__dirname, `${uniqueId}.db`);
     const db = new Database(dbPath);
+
+    db.get("PRAGMA foreign_keys = ON");
 
     const globPattern = path.join(__dirname, '**/*-up.sql');
     const sqlFilePaths: string[] = globSync(globPattern, {
