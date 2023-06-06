@@ -12,7 +12,7 @@
     "migration:down": "db-migrate down -m src/database/migrations",
     "test:unit": "mocha --require ts-node/register --recursive 'src/**/*.test.ts' --timeout 20000 --exit",
     "test:e2e": "mocha --require ts-node/register --recursive 'e2e/**/*.test.ts' --timeout 20000 --exit",
-    "test:all": "mocha --require ts-node/register --recursive 'src/**/*.test.ts e2e/**/*.test.ts' --timeout 20000 --exit",
+    "test:all": "mocha --require ts-node/register --recursive '{src,e2e}/**/*.test.ts' --timeout 20000 --exit",
     "test": "mocha --require ts-node/register --timeout 5000 --exit --recursive"
   },
   "keywords": [],
