@@ -54,7 +54,7 @@ export default class OrderRepository {
         if (sortOpts) {
             if (sortOpts.createdAt) {
                 const orderBy: string = sortDirectionToSql(sortOpts.createdAt!);
-                whereFilter = `${whereFilter} ORDER BY ${orderBy}`;
+                whereFilter = `${whereFilter} ORDER BY o.created_at ${orderBy}`;
             }
         }
 
