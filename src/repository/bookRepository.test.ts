@@ -34,5 +34,18 @@ describe('BookRepository', () => {
             const books = await bookRepository.getBooks();
             assert.equal(books.length, 3);
         });
+
+        it('should return only books with requested ids', async () => {
+            const books = await bookRepository.getBooks();
+            assert.equal(books.length, 3);
+
+            const bookIdsForFilter: number[] = books.slice(1).map((b) => b.id);
+            const filteredBooks = await bookRepository.getBooks(bookIdsForFilter);
+            assert.equal(filteredBooks.length, 2);
+
+            for (const b of filteredBooks) {
+                assert.isTrue(bookIdsForFilter.includes(b.id));
+            }
+        });
     });
 });

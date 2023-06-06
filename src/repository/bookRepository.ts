@@ -12,11 +12,24 @@ export default class BookRepository {
         this.db = db;
     }
 
-    public async getBooks() {
+    public async getBooks(ids?: number[]): Promise<Book[]> {
         return new Promise<Book[]>((resolve, reject) => {
-            this.db.all<Book>("SELECT id, title, synopsis, author, price, created_at FROM books", (err, rows) => {
+            let args: number[] = [];
+            let query = "SELECT id, title, synopsis, author, price, created_at FROM books";
+
+            if (ids) {
+                const placeholders = ids.map(() => "?").join(",");
+                query = `${query} WHERE id IN (${placeholders})`;
+                args = ids;
+            }
+
+            this.db.all<Book>(query, args, (err, rows) => {
                 if (err) {
-                    reject(err)
+                    return reject(err)
+                }
+
+                if (rows.length == 0) {
+                    return resolve([]);
                 }
 
                 const newBooks = rows.map((book) => new Book(
