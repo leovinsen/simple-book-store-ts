@@ -3,6 +3,8 @@ import { ValidationError } from '../error/validationError';
 import { AlreadyExistsError } from '../error/alreadyExistsError';
 import { NotFoundError } from '../error/notFoundError';
 import { CustomError } from '../error/customError';
+import { UnauthorizedError } from '../error/unauthorizedError';
+import { MissingBearerTokenError } from '../error/missingBearerTokenError';
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
     let statusCode: number;
@@ -14,6 +16,8 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
         statusCode = 404;
     } else if (err instanceof CustomError) {
         statusCode = err.HttpStatusCode;
+    } else if (err instanceof UnauthorizedError || err instanceof MissingBearerTokenError) {
+        statusCode = 401;
     } else {
         statusCode = 500;
     }
