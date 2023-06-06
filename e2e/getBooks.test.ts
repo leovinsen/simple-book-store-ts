@@ -26,8 +26,6 @@ describe('Get Books', () => {
     });
 
     it('should return a list of books', async () => {
-        db.run("DELETE FROM books");
-
         const stmt = db.prepare("INSERT INTO books (`title`, `synopsis`, `author`, `price`) VALUES (?, ?, ?, ?)");
         stmt.run(title, synopsis, author, price);
         stmt.finalize();
