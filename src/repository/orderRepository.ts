@@ -79,12 +79,12 @@ export default class OrderRepository {
 
             this.db.all(query, args, (err, rows: any) => {
                 if (err) {
-                    reject(err);
+                    return reject(err);
                 }
 
                 // no record found
                 if (rows.length == 0) {
-                    resolve([]);
+                    return resolve([]);
                 }
 
                 const castRows = rows as [{ [key: string]: any }];

@@ -24,7 +24,7 @@ export default class UserRepository {
             statement.get<User>([email], (err, row) => {
                 statement.finalize();
                 if (err) {
-                    reject(err)
+                    return reject(err)
                 }
 
                 if (row == undefined) {
@@ -48,7 +48,7 @@ export default class UserRepository {
             statement.get<User>([id], (err, row) => {
                 statement.finalize();
                 if (err) {
-                    reject(err)
+                    return reject(err)
                 }
 
                 if (row == undefined) {
