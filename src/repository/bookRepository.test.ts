@@ -4,8 +4,7 @@ import { Teardown, createTestDB } from '../database';
 import { Database } from 'sqlite3';
 import { v4 as uuidv4 } from 'uuid';
 import BookRepository from './bookRepository';
-import fs from 'fs';
-import path from 'path';
+import { seedTableBooks } from '../test/seedBooks';
 
 let assert = chai.assert;
 
@@ -20,6 +19,9 @@ describe('BookRepository', () => {
         db = database.db;
         teardown = database.teardown;
 
+        // there are three books seeded in this function
+        seedTableBooks(db)
+
         bookRepository = new BookRepository(db);
     });
 
@@ -29,11 +31,6 @@ describe('BookRepository', () => {
 
     describe('getBooks', () => {
         it('should return all books in the database', async () => {
-            // there are 3 records in seed values
-            const seedPath = path.join(__dirname, '..', 'database', 'seed', 'table-books-seed.sql');
-            const seedSql = fs.readFileSync(seedPath).toString();
-            db.exec(seedSql);
-
             const books = await bookRepository.getBooks();
             assert.equal(books.length, 3);
         });
