@@ -3,7 +3,7 @@ import chai from 'chai';
 import { agent as request } from 'supertest';
 import { Database } from 'sqlite3';
 import { Express } from 'express';
-import { createApp } from '../../app';
+import { createApp } from '../src/app';
 import { faker } from '@faker-js/faker';
 import Container from 'typedi';
 
