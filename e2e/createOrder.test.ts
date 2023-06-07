@@ -1,11 +1,12 @@
 import 'mocha';
 import chai from 'chai';
 import { agent as request } from 'supertest';
-import { Database } from 'sqlite3';
+import { Database } from "better-sqlite3";
 import { Express } from 'express';
 import { createApp } from '../src/app';
 import Container from 'typedi';
 import { generateJwt } from '../src/helper/generateJwt';
+import diConfig from '../src/config/di';
 
 let assert = chai.assert;
 
@@ -18,7 +19,7 @@ describe('Get Orders', () => {
 
     before(async () => {
         app = await createApp();
-        db = Container.get(Database);
+        db = Container.get(diConfig.database);
 
         validJwt = generateJwt({
             sub: 1,

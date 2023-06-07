@@ -1,7 +1,7 @@
 import 'mocha';
 import chai from 'chai';
 import { Teardown, createTestDB } from '../database';
-import { Database } from 'sqlite3';
+import { Database } from "better-sqlite3";
 import { v4 as uuidv4 } from 'uuid';
 import UserRepository from './userRepository';
 
@@ -65,7 +65,7 @@ describe('UserRepository', () => {
             const user = await userRepository.findUserByID(createdUser.id);
             assert.isNotNull(user);
             assert.equal(createdUser.id, user!.id);
-            assert.equal(createdUser.createdAt, user!.createdAt);
+            assert.equal(createdUser.createdAt.getUTCMilliseconds, user!.createdAt.getUTCMilliseconds);
             assert.equal(email, user!.email);
             assert.equal(password, user!.password);
         });

@@ -1,7 +1,8 @@
 import 'mocha';
 import chai from 'chai';
 import { agent as request } from 'supertest';
-import { Database } from 'sqlite3';
+import { Database } from "better-sqlite3"
+import diConfig from '../src/config/di';
 import { Express } from 'express';
 import { createApp } from '../src/app';
 import Container from 'typedi';
@@ -18,7 +19,7 @@ describe('Get Orders', () => {
 
     before(async () => {
         app = await createApp();
-        db = Container.get(Database);
+        db = Container.get(diConfig.database);
 
         validJwt = generateJwt({
             sub: 1,

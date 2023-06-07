@@ -1,12 +1,13 @@
-import { Database } from "sqlite3";
+import { Database } from "better-sqlite3";
 import { Order, OrderDetail } from "../model/order";
-import { Service } from "typedi";
+import { Inject, Service } from "typedi";
 import { SortDirection, sortDirectionToSql } from "../model/sortDirection";
+import diConfig from "../config/di";
 
 // Defines possible filters for findOrder
 type FindOrderFilter = {
-    id?: number;
-    userId?: number;
+    id?: number | bigint;
+    userId?: number | bigint;
 }
 
 type FindOrderSortOptions = {
@@ -24,6 +25,7 @@ export default class OrderRepository {
     private db: Database;
 
     constructor(
+        @Inject(diConfig.database)
         db: Database
     ) {
         this.db = db;
@@ -58,107 +60,99 @@ export default class OrderRepository {
             }
         }
 
-        return new Promise<Order[]>((resolve, reject) => {
-            const query = `
-            SELECT 
-                o.id,
-                o.user_id,
-                o.grand_total,
-                o.created_at,
-                od.book_id,
-                od.selling_price,
-                od.qty,
-                od.subtotal
-            FROM 
-                orders o
-            LEFT JOIN 
-                orders_details od 
-                ON od.order_id = o.id
-            ${whereFilter}
-            `
+        const query = `
+        SELECT 
+            o.id,
+            o.user_id,
+            o.grand_total,
+            o.created_at,
+            od.book_id,
+            od.selling_price,
+            od.qty,
+            od.subtotal
+        FROM 
+            orders o
+        LEFT JOIN 
+            orders_details od 
+            ON od.order_id = o.id
+        ${whereFilter}
+        `
 
-            this.db.all(query, args, (err, rows: any) => {
-                if (err) {
-                    return reject(err);
-                }
+        const rows: unknown[] = this.db.prepare(query).all(args);
+        if (rows.length == 0) {
+            return [];
+        }
 
-                // no record found
-                if (rows.length == 0) {
-                    return resolve([]);
-                }
+        const castRows = rows as [{ [key: string]: any }];
+        let orders: Order[] = [];
+        let orderDetails: OrderDetail[] = [];
+        let lastOrderId: number = castRows[0].id;
+        let lastGrandTotal = 0;
+        let lastCreatedAt: Date = new Date();
 
-                const castRows = rows as [{ [key: string]: any }];
+        for (let i = 0; i < castRows.length; i++) {
+            const row = castRows[i];
 
-                let orders: Order[] = [];
-                let orderDetails: OrderDetail[] = [];
-                let lastOrderId: number = rows[0].id;
-                let lastGrandTotal = 0;
-                let lastCreatedAt: Date = new Date();
-
-                for (let i = 0; i < castRows.length; i++) {
-                    const row = castRows[i];
-
-                    // once a new order.id is found, push the Order object into orders
-                    // and clear orderDetails array for new Order object
-                    if (row.id != lastOrderId) {
-                        orders.push(new Order(
-                            lastOrderId,
-                            rows[0].user_id,
-                            lastGrandTotal,
-                            lastCreatedAt,
-                            orderDetails,
-                        ));
-
-                        // clear array
-                        orderDetails = [];
-                        lastGrandTotal = 0;
-                        lastOrderId = row.id;
-                    }
-
-                    const detail = new OrderDetail(
-                        row.book_id,
-                        row.selling_price / 100,
-                        row.qty,
-                        row.subtotal / 100,
-                    );
-                    lastGrandTotal = row.grand_total;
-                    lastCreatedAt = new Date(row.created_at);
-
-                    orderDetails.push(detail);
-                }
-
-                // push last order to the array
+            // once a new order.id is found, push the Order object into orders
+            // and clear orderDetails array for new Order object
+            if (row.id != lastOrderId) {
                 orders.push(new Order(
                     lastOrderId,
-                    rows[0].user_id,
+                    castRows[0].user_id,
                     lastGrandTotal,
                     lastCreatedAt,
                     orderDetails,
                 ));
 
-                resolve(orders);
-            });
-        });
+                // clear array
+                orderDetails = [];
+                lastGrandTotal = 0;
+                lastOrderId = row.id;
+            }
+
+            const detail = new OrderDetail(
+                row.book_id,
+                row.selling_price / 100,
+                row.qty,
+                row.subtotal / 100,
+            );
+            lastGrandTotal = row.grand_total;
+            lastCreatedAt = new Date(row.created_at);
+
+            orderDetails.push(detail);
+        }
+
+        // push last order to the array
+        orders.push(new Order(
+            lastOrderId,
+            castRows[0].user_id,
+            lastGrandTotal,
+            lastCreatedAt,
+            orderDetails,
+        ));
+
+        return orders;
     }
 
     public async createOrder(order: CreateOrder): Promise<Order> {
-        const insertOrderId: number = await new Promise<number>((resolve, reject) => {
-            this.db.run("INSERT INTO orders (user_id, grand_total) VALUES (?, ?)", [order.userId, order.grandTotal], function (err: Error) {
-                if (err) {
-                    reject(err.message)
-                } else {
-                    resolve(this.lastID as number);
-                }
-            });
-        });
+        const orderId: number | bigint = this.db.transaction(() => {
+            const insertOrderQuery = "INSERT INTO orders (user_id, grand_total) VALUES (?, ?)";
+            const insertResult = this.db.prepare(insertOrderQuery).run(order.userId, order.grandTotal);
 
-        for (const item of order.details) {
-            const query = "INSERT INTO orders_details (order_id, book_id, selling_price, qty, subtotal) VALUES (?, ?, ?, ?, ?)";
-            const values = [insertOrderId, item.bookId, item.sellingPrice * 100, item.qty, item.subtotal * 100];
-            this.db.run(query, values);
-        }
+            const insertDetailQuery = "INSERT INTO orders_details (order_id, book_id, selling_price, qty, subtotal) VALUES (?, ?, ?, ?, ?)";
+            for (const item of order.details) {
+                this.db.prepare(insertDetailQuery).run(
+                    insertResult.lastInsertRowid,
+                    item.bookId,
+                    item.sellingPrice * 100,
+                    item.qty,
+                    item.subtotal * 100
+                );
+            }
+            return insertResult.lastInsertRowid;
+        })();
 
-        const orders = await this.findOrders({ id: insertOrderId });
+        const orders = await this.findOrders({ id: orderId });
         // should never happen, but check anyways
         if (!orders) {
             throw new Error("Newly created order is not found.")
@@ -169,7 +163,7 @@ export default class OrderRepository {
 }
 
 export type CreateOrder = {
-    userId: number;
+    userId: number | bigint;
     grandTotal: number;
     details: CreateOrderDetail[];
 }

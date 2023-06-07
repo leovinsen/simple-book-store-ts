@@ -1,12 +1,12 @@
-import { Database } from 'sqlite3';
+import DatabaseConstructor, { Database } from "better-sqlite3"
 import path from 'path';
 import { globSync } from 'glob'
 import config from '../config';
 import fs from 'fs';
 
 export const createDB = (): Database => {
-    const db = new Database(config.dbPath);
-    db.get("PRAGMA foreign_keys = ON");
+    const db = new DatabaseConstructor(config.dbPath);
+    db.exec("PRAGMA foreign_keys = ON");
 
     return db;
 }
@@ -23,7 +23,7 @@ export type Teardown = () => void;
  */
 export const createTestDB = async (uniqueId: string): Promise<{ db: Database, teardown: Teardown }> => {
     const dbPath = path.join(__dirname, `${uniqueId}.db`);
-    const db = new Database(dbPath);
+    const db: Database = new DatabaseConstructor(dbPath);
 
     const globPattern = path.join(__dirname, '**/*-up.sql');
     const sqlFilePaths: string[] = globSync(globPattern, {

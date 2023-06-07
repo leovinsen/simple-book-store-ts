@@ -1,11 +1,12 @@
 import 'mocha';
 import chai from 'chai';
 import { agent as request } from 'supertest';
-import { Database } from 'sqlite3';
+import { Database } from "better-sqlite3"
 import { Express } from 'express';
 import { createApp } from '../src/app';
 import { faker } from '@faker-js/faker';
 import Container from 'typedi';
+import diConfig from '../src/config/di';
 
 let assert = chai.assert;
 
@@ -22,13 +23,12 @@ describe('Get Books', () => {
 
     before(async () => {
         app = await createApp();
-        db = Container.get(Database);
+        db = Container.get(diConfig.database);
     });
 
     it('should return a list of books', async () => {
         const stmt = db.prepare("INSERT INTO books (`title`, `synopsis`, `author`, `price`) VALUES (?, ?, ?, ?)");
         stmt.run(title, synopsis, author, price);
-        stmt.finalize();
 
         const res = await request(app).get(path);
         assert.equal(res.status, 200);

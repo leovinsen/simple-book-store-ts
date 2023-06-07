@@ -3,9 +3,10 @@ import express, { Express, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import { createDB } from './database';
 import { Container } from 'typedi';
-import { Database } from 'sqlite3';
+import { Database } from "better-sqlite3"
 import router from './route';
 import { errorHandler } from './middleware/errorHandler';
+import diConfig from './config/di';
 
 export const createApp = async (database?: Database): Promise<Express> => {
     const app: Express = express();
@@ -18,8 +19,8 @@ export const createApp = async (database?: Database): Promise<Express> => {
     app.use(router);
     app.use(errorHandler);
 
-    const db = database || createDB();
-    Container.set(Database, db);
+    const db: Database = database || createDB();
+    Container.set<Database>(diConfig.database, db);
 
     return app;
 }

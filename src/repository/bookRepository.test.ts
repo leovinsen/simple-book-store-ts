@@ -1,7 +1,7 @@
 import 'mocha';
 import chai from 'chai';
 import { Teardown, createTestDB } from '../database';
-import { Database } from 'sqlite3';
+import { Database } from "better-sqlite3";
 import { v4 as uuidv4 } from 'uuid';
 import BookRepository from './bookRepository';
 import { seedTableBooks } from '../test/seedBooks';
