@@ -1,6 +1,6 @@
 import 'mocha';
 import chai from 'chai';
-import { agent as request } from 'supertest';
+import supertest, { agent as request } from 'supertest';
 import { Database } from "better-sqlite3";
 import { Express } from 'express';
 import { createApp } from '../src/app';
@@ -10,7 +10,7 @@ import diConfig from '../src/config/di';
 
 let assert = chai.assert;
 
-describe('Get Orders', () => {
+describe('Create Order', () => {
     const path = '/orders';
 
     let db: Database;
@@ -48,5 +48,70 @@ describe('Get Orders', () => {
             assert.equal(res.status, 401);
             assert.equal(res.body.message, "User is unauthorized");
         });
+    })
+
+    describe('400 validation', () => {
+        it('should throw error if duplicate book id is found', async () => {
+            const duplicateId = 1;
+            const res = await request(app)
+                .post(path)
+                .send({
+                    "books": [
+                        {
+                            "id": duplicateId,
+                            "qty": 1,
+                        },
+                        {
+                            "id": duplicateId,
+                            "qty": 2,
+                        },
+                    ]
+                })
+                .set("Authorization", `Bearer ${validJwt}`);
+
+            assert.equal(res.status, 400);
+            assert.equal(res.body.message, `Found duplicate entry for book with id: ${duplicateId}`);
+        })
+
+        it('should throw error if any of the requested book has missing id', async () => {
+            const res = await request(app)
+                .post(path)
+                .send({
+                    "books": [
+                        {
+                            "qty": 1,
+                        },
+
+                    ]
+                })
+                .set("Authorization", `Bearer ${validJwt}`);
+
+            assert.equal(res.status, 400);
+            assert.equal(res.body.message, `Book id is missing`);
+        })
+
+        it('should throw error if list of books is empty', async () => {
+            const res = await request(app)
+                .post(path)
+                .send({
+                    "books": []
+                })
+                .set("Authorization", `Bearer ${validJwt}`);
+
+            assert.equal(res.status, 400);
+            assert.equal(res.body.message, `No books were selected in the order`);
+        })
+
+        it('should throw error if list of books is empty', async () => {
+            const res = await request(app)
+                .post(path)
+                .send({
+                    "books": []
+                })
+                .set("Authorization", `Bearer ${validJwt}`);
+
+            assert.equal(res.status, 400);
+            assert.equal(res.body.message, `No books were selected in the order`);
+        })
     })
 })
