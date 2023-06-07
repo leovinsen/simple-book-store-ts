@@ -36,7 +36,7 @@ export default class BookRepository {
                 row.synopsis,
                 row.author,
                 row.price / 100,
-                new Date(row.createdAt),
+                new Date(row.created_at),
             ));
 
         } catch (e) {
