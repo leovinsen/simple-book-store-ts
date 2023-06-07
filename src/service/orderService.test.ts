@@ -7,7 +7,7 @@ import sinon, { SinonStubbedInstance } from "sinon";
 import User from "../model/user";
 import Book from "../model/book";
 import { SortDirection } from "../model/sortDirection";
-import UserRepository from "../repository/userRepository";
+import { UserRepository } from "../repository/userRepository";
 import { BookQty, BooksNotFoundError, OrderService, UserNotFoundError } from "./orderService";
 import OrderRepository, { CreateOrder } from "../repository/orderRepository";
 import BookRepository from "../repository/bookRepository";
@@ -73,7 +73,7 @@ describe('OrderService', () => {
 
     describe('getOrderHistory', () => {
         it('should return a list of orders that belong to a given user sorted b from most recent', async () => {
-            userRepository.findUserByID.returns(new Promise((resolve, reject) => {
+            userRepository.findUser.returns(new Promise((resolve, reject) => {
                 resolve(fakeUser);
             }));
             orderRepository.findOrders.returns(new Promise((resolve, reject) => {
@@ -82,13 +82,16 @@ describe('OrderService', () => {
 
             const orders = await orderService.getOrderHistory(fakeUser.id);
 
-            expect(userRepository.findUserByID).calledWith(fakeUser.id);
-            expect(orderRepository.findOrders).calledWith({ userId: fakeUser.id }, { createdAt: SortDirection.descending })
+            expect(userRepository.findUser).calledWith({ id: fakeUser.id });
+            expect(orderRepository.findOrders).calledWith(
+                { userId: fakeUser.id },
+                { createdAt: SortDirection.descending },
+            )
             expect(orders.length).equal(fakeOrders.length);
         })
 
         it('should throw UserNotFoundError if no user with given user ID is found', async () => {
-            userRepository.findUserByID.returns(new Promise((resolve, reject) => {
+            userRepository.findUser.returns(new Promise((resolve, reject) => {
                 resolve(null);
             }));
 
@@ -113,7 +116,7 @@ describe('OrderService', () => {
         ]
 
         it('should create a new order for given user', async () => {
-            userRepository.findUserByID.returns(new Promise((resolve, reject) => {
+            userRepository.findUser.returns(new Promise((resolve, reject) => {
                 resolve(fakeUser);
             }));
             bookRepository.getBooks.returns(new Promise((resolve, reject) => {
@@ -124,7 +127,7 @@ describe('OrderService', () => {
             }));
 
             const order = await orderService.createOrder(fakeUser.id, fakeBookQtys);
-            expect(userRepository.findUserByID).calledWith(fakeUser.id);
+            expect(userRepository.findUser).calledWith({ id: fakeUser.id });
 
             // verify that a filter of bookIDs is provided to BookRepository.getBooks
             expect(bookRepository.getBooks).calledWith([fakeBook1.id]);
@@ -149,7 +152,7 @@ describe('OrderService', () => {
         });
 
         it('should throw UserNotFoundError if no user with given user ID is found', async () => {
-            userRepository.findUserByID.returns(new Promise((resolve, reject) => {
+            userRepository.findUser.returns(new Promise((resolve, reject) => {
                 resolve(null);
             }));
 
@@ -165,7 +168,7 @@ describe('OrderService', () => {
         })
 
         it('should throw BooksNotFoundError if no books with given book IDs are found', async () => {
-            userRepository.findUserByID.returns(new Promise((resolve, reject) => {
+            userRepository.findUser.returns(new Promise((resolve, reject) => {
                 resolve(fakeUser);
             }));
             bookRepository.getBooks.returns(new Promise((resolve, reject) => {
@@ -195,7 +198,7 @@ describe('OrderService', () => {
                     qty: 2,
                 },
             ]
-            userRepository.findUserByID.returns(new Promise((resolve, reject) => {
+            userRepository.findUser.returns(new Promise((resolve, reject) => {
                 resolve(fakeUser);
             }));
             bookRepository.getBooks.returns(new Promise((resolve, reject) => {

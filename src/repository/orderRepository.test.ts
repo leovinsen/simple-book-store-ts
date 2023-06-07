@@ -4,7 +4,7 @@ import { Teardown, createTestDB } from '../database';
 import { Database } from "better-sqlite3"
 import { v4 as uuidv4 } from 'uuid';
 import OrderRepository, { CreateOrder, CreateOrderDetail } from './orderRepository';
-import UserRepository from './userRepository';
+import { UserRepository } from './userRepository';
 import { faker } from '@faker-js/faker';
 import { Order } from '../model/order';
 import { seedTableBooks } from '../test/seedBooks';

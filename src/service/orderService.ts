@@ -2,7 +2,7 @@ import { Service } from "typedi";
 import { NotFoundError } from "../error/notFoundError";
 import OrderRepository, { CreateOrder, CreateOrderDetail } from "../repository/orderRepository";
 import BookRepository from "../repository/bookRepository";
-import UserRepository from "../repository/userRepository";
+import { UserRepository } from "../repository/userRepository";
 import Book from "../model/book";
 import { SortDirection } from "../model/sortDirection";
 import { Order } from "../model/order";
@@ -44,7 +44,7 @@ class OrderService {
      * @returns Array of Orders, possibly empty if no orders exist for the user.
      */
     public async getOrderHistory(userId: number): Promise<Order[]> {
-        const user = await this._userRepository.findUserByID(userId);
+        const user = await this._userRepository.findUser({ id: userId });
         if (user == null) {
             throw new UserNotFoundError();
         }
@@ -70,7 +70,7 @@ class OrderService {
      * @returns newly created Order object
      */
     public async createOrder(userId: number, bookQtys: BookQty[]): Promise<Order> {
-        const user = await this._userRepository.findUserByID(userId);
+        const user = await this._userRepository.findUser({ id: userId });
         if (user == null) {
             throw new UserNotFoundError();
         }

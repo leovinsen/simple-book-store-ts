@@ -3,8 +3,14 @@ import User from "../model/user";
 import { Inject, Service } from "typedi";
 import diConfig from "../config/di";
 
+// Defines possible filters for FindUser
+export type FindUserFilter = {
+    id?: number | bigint;
+    email?: string;
+}
+
 @Service()
-export default class UserRepository {
+export class UserRepository {
     private db: Database;
 
     constructor(
@@ -15,47 +21,44 @@ export default class UserRepository {
     }
 
     /**
-     * Finds a user in database by using their email as filter condition.
+     * Finds a user in database by using either email address or user's id.
      * 
-     * @param email email of the user
+     * @param filter a filter of email address or user ID
      * @returns the User or a `null` if no record was found
      */
-    public async findUserByEmail(email: string): Promise<User | null> {
-        const query = "SELECT id, email, password, created_at FROM users WHERE email = ? LIMIT 1";
-        const row = this.db.prepare(query).get(email);
-        if (row == undefined) {
-            return null;
+    public async findUser(filter: FindUserFilter): Promise<User | null> {
+        let query = "SELECT id, email, password, created_at FROM users";
+
+        let args: number | bigint | string;
+        if (filter.id) {
+            query = `${query} WHERE id = ?`
+            args = filter.id!;
+        } else if (filter.email) {
+            query = `${query} WHERE email = ?`
+            args = filter.email!;
+        } else {
+            // should never happen
+            throw Error(`Unexpected value for findUser() filter ${filter}`);
         }
 
-        const castRow = row as { [key: string]: any };
-        return new User(
-            castRow.id,
-            castRow.email,
-            castRow.password,
-            new Date(castRow.created_at)
-        )
-    }
+        query = `${query} LIMIT 1`;
 
-    /**
-     * Finds a user in database by using their ID as filter condition.
-     * 
-     * @param id ID of the user
-     * @returns the User or a `null` if no record was found
-     */
-    public async findUserByID(id: number): Promise<User | null> {
-        const query = "SELECT id, email, password, created_at FROM users WHERE id = ? LIMIT 1";
-        const row = this.db.prepare(query).get(id);
-        if (row == undefined) {
-            return null;
+        try {
+            const row = this.db.prepare(query).get(args);
+            if (row == undefined) {
+                return null;
+            }
+
+            const castRow = row as { [key: string]: any };
+            return new User(
+                castRow.id,
+                castRow.email,
+                castRow.password,
+                new Date(castRow.created_at)
+            )
+        } catch (e) {
+            throw Error(`Failed to execute SELECT query for findUser, e: ${e}`)
         }
-
-        const castRow = row as { [key: string]: any };
-        return new User(
-            castRow.id,
-            castRow.email,
-            castRow.password,
-            new Date(castRow.created_at)
-        )
     }
 
     /**
@@ -73,6 +76,6 @@ export default class UserRepository {
             throw new Error(`Failed to insert user, e: ${e}`)
         }
 
-        return await this.findUserByEmail(email) as User;
+        return await this.findUser({ email: email }) as User;
     }
 }

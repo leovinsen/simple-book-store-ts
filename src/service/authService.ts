@@ -3,7 +3,7 @@ import User from "../model/user";
 import PasswordHasher from "../helper/passwordHasher";
 import { NotFoundError } from "../error/notFoundError";
 import { AlreadyExistsError } from "../error/alreadyExistsError";
-import UserRepository from "../repository/userRepository";
+import { UserRepository } from "../repository/userRepository";
 import { generateJwt } from "../helper/generateJwt";
 
 class UserNotFoundError extends NotFoundError {
@@ -51,7 +51,7 @@ class AuthService {
      * @returns a JWT token if email and password combination is valid
      */
     public async login(email: string, password: string): Promise<string> {
-        const user: User | null = await this._userRepository.findUserByEmail(email);
+        const user: User | null = await this._userRepository.findUser({ email: email });
         if (user == null) {
             throw new UserNotFoundError();
         }
@@ -78,7 +78,7 @@ class AuthService {
      * @returns the created User record if successful
      */
     public async registerUser(email: string, password: string): Promise<User> {
-        const checkUser = await this._userRepository.findUserByEmail(email);
+        const checkUser = await this._userRepository.findUser({ email: email });
         if (checkUser != null) {
             throw new UserAlreadyExistsError();
         }
