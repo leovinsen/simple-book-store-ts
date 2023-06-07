@@ -8,7 +8,7 @@ import router from './route';
 import { errorHandler } from './middleware/errorHandler';
 import diConfig from './config/di';
 
-export const createApp = async (database?: Database): Promise<Express> => {
+export const createApp = async (): Promise<Express> => {
     const app: Express = express();
 
     app.get('/', (req: Request, res: Response) => {
@@ -19,7 +19,7 @@ export const createApp = async (database?: Database): Promise<Express> => {
     app.use(router);
     app.use(errorHandler);
 
-    const db: Database = database || createDB();
+    const db: Database = createDB();
     Container.set<Database>(diConfig.database, db);
 
     return app;
