@@ -29,7 +29,7 @@ const createSqliteConn = (reset: boolean = false): Database => {
     }
 
     const db = new DatabaseConstructor(config.dbPath);
-    // db.exec("PRAGMA foreign_keys = ON");
+    db.exec("PRAGMA foreign_keys = ON");
 
     if (reset) {
         runMigrations(db);
